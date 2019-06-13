@@ -1,0 +1,384 @@
+#+TITLE: C Language CheatSheet
+#+MACRO: URL https://github.com/alhassy/CCheatSheet
+#+MACRO: blurb Basics of the tremendously ubiquitous C language that permits most of computing!
+#+MACRO: ShowURL @@latex:{\tiny\hspace{6em}\url{ {{{URL}}} } }@@
+#+AUTHOR: [[http://www.cas.mcmaster.ca/~alhassm/][Musa Al-hassy]] {{{ShowURL}}}
+#+EMAIL: alhassy@gmail.com
+#+TODO: Todo | spacing begin end LaTeX
+#+OPTIONS: d:nil
+#+INCLUDE: CheatSheet/CheatSheetSetup.org
+#+PROPERTY: header-args :results replace
+
+:EmacsSetup:
+
+See [[https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-C.html][here]] for working with C/C++/D code blocks in Org mode;
+which includes examples and header argument configurations.
+
++ If a main method is not present in a code block then the entire block is wrapped in a trivial main function call.
+
++ If you want to see the expanded source code, without compiling and running it, just type C-c C-v v.
+
+:var VARIABLE=VALUE
+A global C, C++, or D variable named VARIABLE will be declared and initialized with VALUE
+
+Possible types for VARIABLE may be:
+
+int,
+double,
+string or const char*,
+type[]    // type = int, double, string, const char*
+type[][]  // type = int, double, string, const char*
+The later type, type[][], is used for variables storing Org tables
+
+The type[] is used for lists or vectors declared in the header.
+
++ ~:cmdline~ ::
+	command line arguments to pass to the executable compiled from the code block.
+
++ ~:flags~ :: flags to pass to the compiler.
+
++ ~:main~ ::
+	    can be set to "no" to inhibit wrapping of the code block in a main function call.
+
++ ~:includes~ :: accepts either a single string name, or a list of names of files to #include in the execution of the code block.
+
++ ~:defines~ :: just like :includes but for #defines lines at the top of the code.
+
++ ~:libs~ :: useful for linking with a library, may be given -L/path/to/lib and -llibrary instructions.
+
+There is no support for sessions:
+As opposed to interpreted languages, which can be evaluated directly, C, C++, and D code is first compiled to an executable which is then run.
+
++ There is no directive like ~#include "stdio.h"~ because those libraries are so common that they are always included.
+
++ Variables may be declared outside the script. They are automatically inserted at the top of the script.
+
+#+NAME: nice
+| English | Arabic |
+|---------+--------|
+| zero    | sifr   |
+| one     | wahid  |
+| two     | ithnan |
+
+#+header: :var mystring="Sunday" :var myint=145 :var mydouble=3.14 :var T=nice
+#+BEGIN_SRC C
+  // T is decared as a char*  [][] array with helpers: T_rows, T_cols, T_header, and accessor function T_h(row, col). Press C-c C-v v to see these generated names ;-)
+  printf ("mystring %s\n", mystring);
+  printf ("myint    %d\n", myint);
+  printf ("mydouble %g\n", mydouble);
+  printf ("%s %s", T_h(1, "English"), T_h(1, "Arabic") );
+
+  // When an org table only consists of numbers, then it will be typed double[][],
+  // otherwise tables are always strings, to convert a string to a numeric value, use C's atoi.
+#+END_SRC
+
+#+RESULTS:
+| mystring | Sunday |
+| myint    |    145 |
+| mydouble |   3.14 |
+| one      |  wahid |
+
+generated code visualization through C-c C-v v is super cool.
+
+:End:
+
+* LaTeX Extra, Local, Setup :ignore:
+
+# Can be obtained from: https://github.com/alhassy/MyUnicodeSymbols
+#
+#+LATEX_HEADER: \usepackage{/Users/musa/MyUnicodeSymbols/MyUnicodeSymbols}
+
+# Removing the red box that appears in "minted" when using unicode.
+# Src: https://tex.stackexchange.com/questions/343494/minted-red-box-around-greek-characters
+#
+#+LATEX_HEADER: \makeatletter
+#+LATEX_HEADER: \AtBeginEnvironment{minted}{\dontdofcolorbox}
+#+LATEX_HEADER: \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+#+LATEX_HEADER: \makeatother
+
+#+LATEX_HEADER: \usepackage{newunicodechar}
+#+LATEX_HEADER: \newunicodechar{𝑻}{\ensuremath{T}}
+#+LATEX_HEADER: \newunicodechar{⊕}{\ensuremath{\oplus}}
+#+LATEX_HEADER: \newunicodechar{≈}{\ensuremath{\approx}}
+
+* COMMENT ~\LaTeX~ commands ↦ ~#+latex: \LaTeX~
+
+  Execute the following block, with ~C-c C-c~ anywhere inside it,
+  to hide all LaTeX specific items away so that, for example, the generated HTML
+  does not show them.
+
+  #+BEGIN_SRC emacs-lisp :results no
+(defun my/replace-in-buffer (this that)
+  "Replace every occurance of regexp ‘this’ with ‘that’
+   in the current buffer."
+   (interactive)
+   (save-excursion
+    (beginning-of-buffer)
+    (while (re-search-forward this nil t)
+      (replace-match that)
+    ))
+)
+
+;; Replace newline, any number of space, then room or vspace with a #+latex: beforehand.
+(let (this that)
+  (dolist (kp '( ( "^[ ]*\\\\room" . "#+latex: \\\\room")
+		 ( "^[ ]*\\\\vspace" . "#+latex: \\\\vspace")
+		 ( "^[ ]*\\\\newpage" . "#+latex: \\\\newpage")
+		 ( "^[ ]*\\\\columnbreak" . "#+latex: \\\\columnbreak")
+		 ))
+	(setq this (car kp))
+	(setq that (cdr kp))
+	(my/replace-in-buffer this that)
+   )
+)
+  #+END_SRC
+
+  #+RESULTS:
+
+* The Skeleton of a C Program
+
+  + All C programs consist of a series of /functions/, which have return values!
+  + E.g., Assignment ~x = v~ is the function that updates the value of name ~x~
+	with the value of ~v~ then terminates yielding ~v~ as a return value.
+
+  + Semicolons act as statement /terminators/ ---in contrast to English,
+    wherein they are /separators/.
+
+  + C is whitespace agnostic: Newlines and arbitrary spaces don't matter, for the most part.
+    # Every token could be on its own line if we want.
+
+  + /Compound statements/ are formed from primitive statements by enclosing them in ~{~ curly braces ~}~.
+    - Compounds may appear where-ever a single statement is allowed.
+
+  + All keywords are in lowercase.
+
+  + C functions don't have to return anything if it's not appropriate.
+    - E.g., ~exit(n)~ is the function that returns control to the operating system;
+      passing it an argument ~n~, usually 0 if everything has gone smoothly and 1 if it's
+      an error exit. Yet this function obviously' can't /return/ a value.
+
+  + You must specify the type of a variable before you can use it.
+
+  + A variable name is only meaningful in the curly brackets that define it,
+    and is otherwise meaningless. This is its /scope/.
+    - Whence, the same names can occur in different places to mean different things.
+    - To transfer data between functions one thus uses parameter lists and return calls.
+
+  + ~printf~, “print formatted”, is a /dependently-typed function/: The number and type
+    of its arguments depends on its first argument, a string.
+    + The number of occurrences of ‘%’ in the string argument is the number of additional arguments
+      the ~printf~ takes.
+
+#+BEGIN_SRC C
+printf("The length is %4d cms", 10);
+#+END_SRC
+
+#+RESULTS:
+: The length is   10 cms
+
+#+BEGIN_SRC C
+int sum(int n)
+{
+  int total = 0, i = 0;
+  while (i != n + 1)
+    total += i, i++;
+
+  return total;
+}
+
+int main ()
+{
+  printf("Sum of 0 + 1 + ⋯ + 99 + 100 = %d", sum(100));
+  return 0;
+}
+#+END_SRC
+
+
+
+#+RESULTS:
+: Sum of 0 + 1 + ⋯ + 99 + 100 = 5050
+
+* Conditionals
+  In C, /true ≈ non-zero/.
+
+  Form of the conditional:
+#+BEGIN_SRC C
+if (condition)
+  statementBlock
+// The rest is optional.
+else
+  statementBlock
+  #+END_SRC
+
++ ~condition~ is /any/ expression that returns a numeric value:
+  All numbers are treated as ‘true’, except 0 which is considered ‘false’.
+  - Ex, ~while(1) S~ means repeat ~S~ /forever/, or as much as possible.
+
+  #+BEGIN_SRC C :results replace
+  if (1) printf("3"); else printf("2");
+#+END_SRC
+
+| == | equals               |   |              |
+| != | differs fromat least | ! | not          |
+| >= | at least             | > | greater than |
+| <= | at most              | < | less than    |
+| && | and                  | ∥ | or           |
+|    |                      |   |              |
+
+Enforce a particular precedence order by enclosing expressions in parentheses.
+
+
+
+* Loops
+
+  Here's the general form.
+#+BEGIN_SRC C
+while (condition)
+  statementBlock
+
+  #+END_SRC
+
+Abbreviations:
+
+| x ⊕= y | x = x ⊕ y |
+| x++    | x += 1    |
+| --x    | x -= 1    |
+
+The increment and decrement, ~++/--~, operators may precede or follow a name:
+
++ If they follow a name, then their behaviour is executed /after/ the smallest context
+  ---e.g., braces or conditional parentheses--- in which they occur.
+
++ When they precede a name, their behaviour is executed before the context in which
+  they appear.
+
++ The order of evaluation is not specified inside a function call and so behaviour
+  varies between compilers.
+
+*Avoid using these in complex expressions, unless you know what you're doing.*
+
+do/while: The conditional is evaluated /after/ the statement has been executed
+and so the statement is obeyed at least once, regardless of the truth or falsity of
+the condition. This is useful for /do once, and possible more/ operations.
+#+BEGIN_SRC C
+int i = 0;
+do printf("%d \n", i++);
+while (i != 10); //Note the ending semicolon.
+#+END_SRC
+
+
+#+RESULTS:
+| 0 |
+| 1 |
+| 2 |
+| 3 |
+| 4 |
+| 5 |
+| 6 |
+| 7 |
+| 8 |
+| 9 |
+
+For loops:
+#+BEGIN_SRC C
+  for(A; B; C;) S  ≈  A; while(B) S
+#+END_SRC
+
+
+* spacing COMMENT vfill :ignore:
+  \vfill
+* spacing COMMENT newpage                                                    :ignore:
+#+latex: \newpage
+* Example code
+
+  #+begin_src C++ :includes <stdio.h>
+  int a=1;
+  int b=1;
+  printf("%d\n", a+b);
+#+end_src
+
+#+RESULTS:
+: 2
+
+  #+BEGIN_SRC C
+  double pi = 4*atan(1);
+  double r, theta, phi;
+  r = sqrt(x*x+y*y+z*z);
+  theta = acos(z/r) * 180.0/pi;
+  phi = atan2(y,x) * 180.0/pi;
+  printf("%f %f %f", r, theta, phi);
+  #+END_SRC
+
+  #+RESULTS:
+
+#+BEGIN_SRC C :main main
+int f(){ return 3;}
+
+int main () { printf("%d", f()); return 0;}
+#+END_SRC
+* COMMENT Making README.md
+
+C-c C-c: Evaluate src block.
+
+:'( For some reason using {{{title}}} below would not work.
+
+#+NAME: make-readme
+#+BEGIN_SRC emacs-lisp
+(with-temp-buffer
+    (insert
+    "#+EXPORT_FILE_NAME: README.md
+     ,#+HTML: <h1> Easily Making CheatSheets with Org-mode </h1>
+     ,#+OPTIONS: toc:nil d:nil
+     # Toc is displayed below at a strategic position.
+
+     {{{blurb}}}
+
+     :Hide:
+     This project is to contain a listing of common results in X Theory.
+
+     ,*The repo contains other articles I've written on X Theory;*
+     ,*which may be read in a blog-format at:*
+     https://alhassy.github.io/blog/categories/#Xtheory
+     :End:
+
+    ,*The listing sheet, as PDF, can be found
+     [here]({{{URL}}}/blob/master/CheatSheet.pdf)*,
+     while below is an unruly html rendition.
+
+     This reference sheet is built around the system
+     https://github.com/alhassy/CheatSheet.
+
+     ,#+TOC: headlines 2
+     ,#+INCLUDE: CheatSheet.org
+    ")
+
+    ;; No code execution on export
+    ;; ⟪ For a particular block, we use “:eval never-export” ⟫
+    ;;
+    (let ((org-export-use-babel nil))
+      (org-mode)
+      (org-md-export-to-markdown))
+)
+#+END_SRC
+
+#+RESULTS: make-readme
+: README.md
+
+#+RESULTS:
+: README.md
+
+
+* COMMENT footer
+
+The first “eval” below is convenience matter
+that should be loaded whenever CheatSheet.org is opened.
+
+The second “eval” makes a README for the repo, whenever the file is opened,
+and is then bound to ~f11~ for convenience.
+
+# Local Variables:
+# eval: (progn (visual-line-mode t) (require 'ox-extra) (ox-extras-activate '(ignore-headlines)))
+# eval: (local-set-key (kbd "<f11>") '(lambda () (interactive) (org-babel-goto-named-src-block "make-readme") (org-babel-execute-src-block) (outline-hide-sublevels 1)))
+# eval: (progn (visual-line-mode t) (require 'ox-extra) (ox-extras-activate '(ignore-headlines)))
+# compile-command: (my-org-latex-export-to-pdf)
+# End:
