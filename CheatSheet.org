@@ -1,6 +1,6 @@
 #+TITLE: C Language CheatSheet
 #+MACRO: URL https://github.com/alhassy/CCheatSheet
-#+MACRO: blurb Basics of the tremendously ubiquitous C language that permits most of computing!
+#+MACRO: blurb Basics of the tremendously ubiquitous C language that permeates most of computing!
 #+MACRO: ShowURL @@latex:{\tiny\hspace{6em}\url{ {{{URL}}} } }@@
 #+AUTHOR: [[http://www.cas.mcmaster.ca/~alhassm/][Musa Al-hassy]] {{{ShowURL}}}
 #+EMAIL: alhassy@gmail.com
@@ -227,8 +227,6 @@ else
 
 Enforce a particular precedence order by enclosing expressions in parentheses.
 
-
-
 * Loops
 
   Here's the general form.
@@ -284,6 +282,140 @@ For loops:
   for(A; B; C;) S  ≈  A; while(B) S
 #+END_SRC
 
+* Arithmetic and Logic
+
+#+begin_quote
+/...and then the different branches of arithmetic ---Ambition, Distraction,
+Uglification, and Derision./
+
+---Alice's Adventures in Wonderland
+#+end_quote
+
+The modulus operator ~%~ gives the /remainder/ of a division.
+#+BEGIN_SRC C
+printf("rem = 10 %% 3 = %d  ⇒  ∃ quot •  10 = 3 × quot + rem  ∧  quot = %d", 10 % 3, 10 / 3);
+#+END_SRC
+
+#+RESULTS:
+: rem = 10 % 3 = 1  ⇒  ∃ quot •  10 = 3 × quot + rem  ∧  quot = 3
+
++ In conditionals, one may see ~n % d~ to mean that ~n % d~ is true, i.e., is /non-zero/.
+  This expresses that ~n~ is a /multiple/ of ~d~.
+
++ That is, numerically ~%~ yields remainders; but logically, in C, it expresses the
+  is-multiple-of relationship.
+
+The /bitwise/ operators and ~&~, or ~|~, not ~!~, and xor ~^~ operate at the bit representation
+of an item. For example, the ASCII code of a character consists of 7 bits where
+| _Bit_ | _Function_                            |
+|   7 | 0 digit, 1 letter                   |
+|   6 | 0 upper case, 1 digit or lower case |
+|   5 | 0 for a-o, 1 for digit or p-z       |
+
+Whence, to convert a character to uppercase it suffices to change bit 5 to be a 0
+and leave the other bits alone. That is, to perform a bitwise and with the binary
+number /11011111/, which corresponds to the decimal number 223.
+
+From [[https://stackoverflow.com/a/3208376/3550444][stackoverflow]],
+#+BEGIN_SRC C :tangle "BinaryPrinting.c" :main no
+// Super buggy! E.g., try printing 1 ^ 1.
+
+#define BinPat "%c%c%c%c%c%c%c%c"
+
+#define ToBin(byte)  \
+  ((unsigned int)byte & 0x80 ? '1' : '0'), \
+  ((unsigned int)byte & 0x40 ? '1' : '0'), \
+  ((unsigned int)byte & 0x20 ? '1' : '0'), \
+  ((unsigned int)byte & 0x10 ? '1' : '0'), \
+  ((unsigned int)byte & 0x08 ? '1' : '0'), \
+  ((unsigned int)byte & 0x04 ? '1' : '0'), \
+  ((unsigned int)byte & 0x02 ? '1' : '0'), \
+  ((unsigned int)byte & 0x01 ? '1' : '0')
+
+#define printBin(n) printf(BinPat, ToBin(n));
+#+END_SRC
+
+#+BEGIN_SRC C :includes '(<stdio.h> \"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+for(int i = 0; i < 11; i++)
+  {printf("\n%d ⇒ ", i); printBin(i);}
+#+END_SRC
+
+#+RESULTS:
+|  0 | ⇒ |    0 |
+|  1 | ⇒ |    1 |
+|  2 | ⇒ |   10 |
+|  3 | ⇒ |   11 |
+|  4 | ⇒ |  100 |
+|  5 | ⇒ |  101 |
+|  6 | ⇒ |  110 |
+|  7 | ⇒ |  111 |
+|  8 | ⇒ | 1000 |
+|  9 | ⇒ | 1001 |
+| 10 | ⇒ | 1010 |
+
+#+BEGIN_SRC C :includes '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+printf("Item Binary");
+printf("\n c " BinPat " \n 223 " BinPat, ToBin('c'), ToBin(223));
+printf("\n c&223 " BinPat, ToBin('c' & 223));
+printf("\n %c " BinPat, 'C', ToBin('C'));
+#+END_SRC
+
+#+RESULTS:
+| Item  |   Binary |
+| c     |  1100011 |
+| 223   | 11011111 |
+| c&223 |  1000011 |
+| C     |  1000011 |
+
+How did we know is was 223?
+| Ninth bit is on       | 100000000 | 1 << 8    |
+| Negate it: Eight ones |  11111111 | ~(1 << 8) |
+| Sixth bit is on       |    100000 | 1 << 5    |
+| Xor them              |  11011111 | ⋯ ^ ⋯     |
+| See it as a decimal   |       223 |           |
+
+:Hide:
+#+BEGIN_SRC C :includes '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+printf("\n " BinPat, ToBin(~(1 << 8)));
+#+END_SRC
+
+#+RESULTS:
+: 11111111
+:End:
+
+Ironically, C has no primitive binary printing utility.
+
+| Left Shift  | x << n | append the bit representing of x with n-many 0s               |
+| Right Shift | x >> n | throw away n bits from the end of the bit representation of x |
+
+When ~x~ is a number, these operations correspond to multiplication and division by ~2ⁿ~, respectively.
+
+#+BEGIN_SRC C :includes  '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+// Mask, or hide, bit  6 to be a ‘1’.
+#define toLower(c) (c | (1 << 6))
+
+#define toUpper(c) (c & 223)
+
+#define times10(x) ( (x << 1)  +  (x << 3)) // Parens matter!
+// x  ⇒  2·x + 8·x  ⇒  10 · x
+#+END_SRC
+
+:Example_toLower:
+#+BEGIN_SRC C :includes  '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+// printf("c " BinPat " " BinPat, ToBin('c'), ToBin(toLower('c')));
+// printf("\nC " BinPat " " BinPat, ToBin('C'), ToBin(toLower('C')));
+
+#define times10(x) ( (x << 1)  +  (x << 3))
+int x = 3;
+printf("\n 10·%d ⇒ %d", x, times10(x));
+#+END_SRC
+
+#+RESULTS:
+: 10·3 ⇒ 30
+:End:
+
+* Todo Strings, Arrays, and Pointers
+⇒ 35
 
 * spacing COMMENT vfill :ignore:
   \vfill
