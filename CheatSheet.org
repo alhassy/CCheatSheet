@@ -1,3 +1,5 @@
+# (org-latex-export-to-pdf)
+
 #+TITLE: C Language CheatSheet
 #+MACRO: URL https://github.com/alhassy/CCheatSheet
 #+MACRO: blurb Basics of the tremendously ubiquitous C language that permeates most of computing!
@@ -8,6 +10,13 @@
 #+OPTIONS: d:nil
 #+INCLUDE: CheatSheet/CheatSheetSetup.org
 #+PROPERTY: header-args :results replace
+
+:Nope:
+#+BEGIN_SRC C
+enum days {SUN = 1, MON, TUE, WED, THU, FRI, SAT};
+// Automatically: MON = 2, TUE = 3, ….
+#+END_SRC
+:End:
 
 :EmacsSetup:
 
@@ -101,6 +110,11 @@ generated code visualization through C-c C-v v is super cool.
 #+LATEX_HEADER: \newunicodechar{⊕}{\ensuremath{\oplus}}
 #+LATEX_HEADER: \newunicodechar{≈}{\ensuremath{\approx}}
 
+#+LATEX_HEADER: \newunicodechar{⟪}{\ensuremath{\langle\!\langle}}
+#+LATEX_HEADER: \newunicodechar{⟫}{\ensuremath{\rangle\!\rangle}}
+
+#+LATEX_HEADER: \newunicodechar{𝟘}{\ensuremath{\mathbb{0}}}
+
 * COMMENT ~\LaTeX~ commands ↦ ~#+latex: \LaTeX~
 
   Execute the following block, with ~C-c C-c~ anywhere inside it,
@@ -135,9 +149,11 @@ generated code visualization through C-c C-v v is super cool.
 
   #+RESULTS:
 
-* The Skeleton of a C Program
+
+* Adminstriva
 
   + All C programs consist of a series of /functions/, which have return values!
+
   + E.g., Assignment ~x = v~ is the function that updates the value of name ~x~
 	with the value of ~v~ then terminates yielding ~v~ as a return value.
 
@@ -151,6 +167,19 @@ generated code visualization through C-c C-v v is super cool.
     - Compounds may appear where-ever a single statement is allowed.
 
   + All keywords are in lowercase.
+
+  + C comments do /not/ nest.
+  + Include files personal files by enclosing them in "quotes", use <brackets> for
+    standard library files.
+  + /All/ statements must terminate with a semicolon.
+  + Everything must be declared before it can be used ---sequential.
+  + Characters are in-fact aliases for ASCII numerals.
+    #+BEGIN_SRC C :exports results
+    printf("'A' ≈ %d  ≡  %s", 'A', 'A' == 65? "true" : "false");
+    #+END_SRC
+
+    #+RESULTS:
+    : 'A' ≈ 65  ≡  true
 
   + C functions don't have to return anything if it's not appropriate.
     - E.g., ~exit(n)~ is the function that returns control to the operating system;
@@ -169,14 +198,43 @@ generated code visualization through C-c C-v v is super cool.
     + The number of occurrences of ‘%’ in the string argument is the number of additional arguments
       the ~printf~ takes.
 
-#+BEGIN_SRC C
-printf("The length is %4d cms", 10);
-#+END_SRC
+* spacing newpage                                            :ignore:
+#+latex: \newpage
+* Conditionals & Assertion-Based Testing
 
-#+RESULTS:
-: The length is   10 cms
+  In C, /true ≈ non-zero/.
+  Form of the conditional:
+  \vspace{-0.5em}
+#+BEGIN_SRC C
+if (condition)
+  statementBlock
+// The rest is optional.
+else
+  statementBlock
+  #+END_SRC
+  \vspace{-0.5em}
++ ~condition~ is /any/ expression that returns a numeric value:
+  All numbers are treated as ‘true’, except 0 which is considered ‘false’.
+  # - Ex, ~while(1) S~ means repeat ~S~ /forever/, or as much as possible.
+
+  #+begin_center org
+/Asserts are essentially compile-checked comments of user intentions!/
+#+end_center
+
+~assert(e)~ does nothing when expression ~e~ is true; otherwise it gives a message
+showing the filename, function name, line number, and the condition ~e~ that
+failed to be true.
+# It is a macro defined in <assert.h>.
 
 #+BEGIN_SRC C
+#include <stdio.h>
+
+// Disable assertions at compile time by enabling NODEBUG.
+// #define NDEBUG
+
+#include <assert.h>
+// assert(n)  ≈  if (n) {} else ⟪Terminate and display error message⟫
+
 int sum(int n)
 {
   int total = 0, i = 0;
@@ -188,59 +246,67 @@ int sum(int n)
 
 int main ()
 {
+  // print-based testing
+  if (1) printf("here"); else printf("there");
   printf("Sum of 0 + 1 + ⋯ + 99 + 100 = %d", sum(100));
+
+  // assertion-based testing
+  assert( sum(100) == 5050 );
+  assert( (1 ? "here" : "there") == "here" );
+
+  // Is completely ignored if the #define is enabled.
+  // assert(0);  // Otherwise, this causes a crash.
+
   return 0;
 }
+
 #+END_SRC
-
-
 
 #+RESULTS:
-: Sum of 0 + 1 + ⋯ + 99 + 100 = 5050
+: hereSum of 0 + 1 + ⋯ + 99 + 100 = 5050
 
-* Conditionals
-  In C, /true ≈ non-zero/.
-
-  Form of the conditional:
+  \vspace{-0.5em}
+Enforce a particular precedence order by enclosing expressions in parentheses.
 #+BEGIN_SRC C
-if (condition)
-  statementBlock
-// The rest is optional.
-else
-  statementBlock
-  #+END_SRC
-
-+ ~condition~ is /any/ expression that returns a numeric value:
-  All numbers are treated as ‘true’, except 0 which is considered ‘false’.
-  - Ex, ~while(1) S~ means repeat ~S~ /forever/, or as much as possible.
-
-  #+BEGIN_SRC C :results replace
-  if (1) printf("3"); else printf("2");
+== equals          != differs from     !  not
+>= at least        <= at most          && and
+>  greater than    <  less than        || or
 #+END_SRC
 
-| == | equals               |   |              |
-| != | differs fromat least | ! | not          |
-| >= | at least             | > | greater than |
-| <= | at most              | < | less than    |
-| && | and                  | ∥ | or           |
-|    |                      |   |              |
+# The primary use of assertions is to ensure certain properties of data are true
+# ---e.g., enforcing contracts: Checking conditions on inputs and outputs.
 
-Enforce a particular precedence order by enclosing expressions in parentheses.
+:Hide_my_assert:
+Here's a handy utility for quick testing of my small examples.
+#+BEGIN_SRC C :tangle "myassert.h" :main no
+#define assert(e) int main () { printf("%s", e ? "true" : "false"); return 0; }
+#+END_SRC
 
-* Loops
+Example use:
+#+BEGIN_SRC C :main no :includes '(\"/Users/musa/CCheatSheet/myassert.h\")
+int f(n) { return n % 3; }
 
-  Here's the general form.
+assert( f(0) == 0  &&  f(3) == 0  &&  f(23) == 2);
+#+END_SRC
+
+#+RESULTS:
+: true
+
+We see the results alongside writing a function, without having to form a ~main~
+just to check these tests.
+:End:
+
+* spacing newpage                                            :ignore:
+#+latex: \newpage
+
+* Assignments
+
 #+BEGIN_SRC C
-while (condition)
-  statementBlock
-
-  #+END_SRC
-
-Abbreviations:
-
-| x ⊕= y | x = x ⊕ y |
-| x++    | x += 1    |
-| --x    | x -= 1    |
+/* Abbreviations */
+  x ⊕= y   ≈  x = x ⊕ y
+  x++       ≈  x += 1
+  --x      ≈  x -= 1
+#+END_SRC
 
 The increment and decrement, ~++/--~, operators may precede or follow a name:
 
@@ -255,6 +321,18 @@ The increment and decrement, ~++/--~, operators may precede or follow a name:
 
 *Avoid using these in complex expressions, unless you know what you're doing.*
 
+* Loops
+
+  Here's the general form.
+#+BEGIN_SRC C
+while (condition)
+  statementBlock
+
+/* Abbreviations */
+/* for      loop */   for(A; B; C;) S  ≈  A; while(B) S
+/* do-while loop */   do S while B     ≈  S; while(B) S
+#+END_SRC
+
 do/while: The conditional is evaluated /after/ the statement has been executed
 and so the statement is obeyed at least once, regardless of the truth or falsity of
 the condition. This is useful for /do once, and possible more/ operations.
@@ -263,8 +341,6 @@ int i = 0;
 do printf("%d \n", i++);
 while (i != 10); //Note the ending semicolon.
 #+END_SRC
-
-
 #+RESULTS:
 | 0 |
 | 1 |
@@ -277,10 +353,8 @@ while (i != 10); //Note the ending semicolon.
 | 8 |
 | 9 |
 
-For loops:
-#+BEGIN_SRC C
-  for(A; B; C;) S  ≈  A; while(B) S
-#+END_SRC
+* spacing newpage                                            :ignore:
+#+latex: \newpage
 
 * Arithmetic and Logic
 
@@ -292,7 +366,7 @@ Uglification, and Derision./
 #+end_quote
 
 The modulus operator ~%~ gives the /remainder/ of a division.
-#+BEGIN_SRC C
+#+BEGIN_SRC C :exports none
 printf("rem = 10 %% 3 = %d  ⇒  ∃ quot •  10 = 3 × quot + rem  ∧  quot = %d", 10 % 3, 10 / 3);
 #+END_SRC
 
@@ -305,7 +379,12 @@ printf("rem = 10 %% 3 = %d  ⇒  ∃ quot •  10 = 3 × quot + rem  ∧  quot =
 + That is, numerically ~%~ yields remainders; but logically, in C, it expresses the
   is-multiple-of relationship.
 
-The /bitwise/ operators and ~&~, or ~|~, not ~!~, and xor ~^~ operate at the bit representation
+When ~x~ is a number, the shift operations correspond to multiplication and
+division by ~2ⁿ~, respectively.
+| Left Shift  | ~x << n~ | append the bit representation of ~x~ with ~n~-many 0s             |
+| Right Shift | ~x >> n~ | throw away ~n~ bits from the end of the bit representation of ~x~ |
+
+The /bitwise/ operators /and ~&~, or ~|~, not ~!~,/ and /xor/ ~^~ operate at the bit representation
 of an item. For example, the ASCII code of a character consists of 7 bits where
 | _Bit_ | _Function_                            |
 |   7 | 0 digit, 1 letter                   |
@@ -313,9 +392,10 @@ of an item. For example, the ASCII code of a character consists of 7 bits where
 |   5 | 0 for a-o, 1 for digit or p-z       |
 
 Whence, to convert a character to uppercase it suffices to change bit 5 to be a 0
-and leave the other bits alone. That is, to perform a bitwise and with the binary
+and leave the other bits alone. That is, to perform a bitwise /and/ with the binary
 number /11011111/, which corresponds to the decimal number 223.
 
+:Hide_binary_priniting:
 From [[https://stackoverflow.com/a/3208376/3550444][stackoverflow]],
 #+BEGIN_SRC C :tangle "BinaryPrinting.c" :main no
 // Super buggy! E.g., try printing 1 ^ 1.
@@ -366,29 +446,7 @@ printf("\n %c " BinPat, 'C', ToBin('C'));
 | 223   | 11011111 |
 | c&223 |  1000011 |
 | C     |  1000011 |
-
-How did we know is was 223?
-| Ninth bit is on       | 100000000 | 1 << 8    |
-| Negate it: Eight ones |  11111111 | ~(1 << 8) |
-| Sixth bit is on       |    100000 | 1 << 5    |
-| Xor them              |  11011111 | ⋯ ^ ⋯     |
-| See it as a decimal   |       223 |           |
-
-:Hide:
-#+BEGIN_SRC C :includes '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
-printf("\n " BinPat, ToBin(~(1 << 8)));
-#+END_SRC
-
-#+RESULTS:
-: 11111111
 :End:
-
-Ironically, C has no primitive binary printing utility.
-
-| Left Shift  | x << n | append the bit representing of x with n-many 0s               |
-| Right Shift | x >> n | throw away n bits from the end of the bit representation of x |
-
-When ~x~ is a number, these operations correspond to multiplication and division by ~2ⁿ~, respectively.
 
 #+BEGIN_SRC C :includes  '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
 // Mask, or hide, bit  6 to be a ‘1’.
@@ -399,7 +457,6 @@ When ~x~ is a number, these operations correspond to multiplication and division
 #define times10(x) ( (x << 1)  +  (x << 3)) // Parens matter!
 // x  ⇒  2·x + 8·x  ⇒  10 · x
 #+END_SRC
-
 :Example_toLower:
 #+BEGIN_SRC C :includes  '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
 // printf("c " BinPat " " BinPat, ToBin('c'), ToBin(toLower('c')));
@@ -414,14 +471,80 @@ printf("\n 10·%d ⇒ %d", x, times10(x));
 : 10·3 ⇒ 30
 :End:
 
-* Todo Strings, Arrays, and Pointers
-⇒ 35
+How did we know is was 223?
+| 0. Ninth bit is on       | ~100000000~ | ~1 << 8~   |
+| 1. Negate it: Eight ones | ~11111111~  | ~(1 << 8)~ |
+| 2. Sixth bit is on       | ~100000~    | ~1 << 5~   |
+| 3. Xor them              | ~11011111~  | ~⋯ ^ ⋯~    |
+| 4. See it as a decimal   | ~223~       |          |
+
+:Hide:
+#+BEGIN_SRC C :includes '(\"/Users/musa/CCheatSheet/BinaryPrinting.h\")
+printf("\n " BinPat, ToBin(~(1 << 8)));
+#+END_SRC
+
+#+RESULTS:
+: 11111111
+:End:
+
+Ironically, C has no primitive binary printing utility.
+
+* spacing newpage                                                    :ignore:
+#+latex: \newpage
+* Strings, Arrays, and Pointers
+
+  + The idea of a pointer is central to the C programming philosophy.
+    - It is pointers to strings, rather than strings themselves, that're passed around
+      in a C program.
+
+  + C strings like ~s = "this"~ actually, under the hood, are /null-terminated
+    arrays of characters/: The name ~s~ refers to the /address of/ the first character, the ~'t'~,
+    with the array being ~'t' → 'h' → 'i' → 's' → 𝟘~, where 𝟘 is /not/ ASCII zero
+    ---whose value is 48--- but ASCII /null/ ---i.e., all bits set to 0.
+
+  + /An array name is a pointer to the beginning of the array./
+    - Yet, an array name is a constant and you can't do arithmetic with it.
+
+#+BEGIN_SRC C :exports both
+int length(char c[]) // A string is a character array
+{
+  // While c[l] is not an ASCII null, keep counting until.
+  int l = 0;
+  while( c[l] ) l++;
+  return l;
+}
+
+int main()
+{
+  char str[] = "hello world 0123";
+  printf("length(“%s”) = %d", str, length(str));
+   return 0;
+}
+#+END_SRC
+
+#+RESULTS:
+: length(“hello world 0123”) = 16
+
+  + ~T *p;~ ⇒ declare ~p~ to be a pointer to elements of type ~T~.
+  + ~*p = v~ ⇒ “put the value of ~v~ in the location which ~p~ points to”
+
+We can now rewrite the length function with even less square brackets.
+#+BEGIN_SRC C  :main no :includes '(\"/Users/musa/CCheatSheet/myassert.h\")
+int length(char* c)
+{
+  char* start = c;
+  while( *c ) c++; // Local copy of c is affected.
+  return c - start;
+}
+
+assert(length("hello world") == 11);
+#+END_SRC
 
 * spacing COMMENT vfill :ignore:
   \vfill
 * spacing COMMENT newpage                                                    :ignore:
 #+latex: \newpage
-* Example code
+* COMMENT Example code
 
   #+begin_src C++ :includes <stdio.h>
   int a=1;
@@ -452,8 +575,6 @@ int main () { printf("%d", f()); return 0;}
 
 C-c C-c: Evaluate src block.
 
-:'( For some reason using {{{title}}} below would not work.
-
 #+NAME: make-readme
 #+BEGIN_SRC emacs-lisp
 (with-temp-buffer
@@ -464,14 +585,6 @@ C-c C-c: Evaluate src block.
      # Toc is displayed below at a strategic position.
 
      {{{blurb}}}
-
-     :Hide:
-     This project is to contain a listing of common results in X Theory.
-
-     ,*The repo contains other articles I've written on X Theory;*
-     ,*which may be read in a blog-format at:*
-     https://alhassy.github.io/blog/categories/#Xtheory
-     :End:
 
     ,*The listing sheet, as PDF, can be found
      [here]({{{URL}}}/blob/master/CheatSheet.pdf)*,
