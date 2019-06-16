@@ -42,12 +42,12 @@ The later type, type[][], is used for variables storing Org tables
 The type[] is used for lists or vectors declared in the header.
 
 + ~:cmdline~ ::
-	command line arguments to pass to the executable compiled from the code block.
+    command line arguments to pass to the executable compiled from the code block.
 
 + ~:flags~ :: flags to pass to the compiler.
 
 + ~:main~ ::
-	    can be set to "no" to inhibit wrapping of the code block in a main function call.
+        can be set to "no" to inhibit wrapping of the code block in a main function call.
 
 + ~:includes~ :: accepts either a single string name, or a list of names of files to #include in the execution of the code block.
 
@@ -57,6 +57,7 @@ The type[] is used for lists or vectors declared in the header.
 
 There is no support for sessions:
 As opposed to interpreted languages, which can be evaluated directly, C, C++, and D code is first compiled to an executable which is then run.
+However, /An Interactive Way to C/ does provide support for sessions by using the ~currently-working-with~ mechanism (•̀ᴗ•́)و
 
 + There is no directive like ~#include "stdio.h"~ because those libraries are so common that they are always included.
 
@@ -136,13 +137,13 @@ generated code visualization through C-c C-v v is super cool.
 ;; Replace newline, any number of space, then room or vspace with a #+latex: beforehand.
 (let (this that)
   (dolist (kp '( ( "^[ ]*\\\\room" . "#+latex: \\\\room")
-		 ( "^[ ]*\\\\vspace" . "#+latex: \\\\vspace")
-		 ( "^[ ]*\\\\newpage" . "#+latex: \\\\newpage")
-		 ( "^[ ]*\\\\columnbreak" . "#+latex: \\\\columnbreak")
-		 ))
-	(setq this (car kp))
-	(setq that (cdr kp))
-	(my/replace-in-buffer this that)
+         ( "^[ ]*\\\\vspace" . "#+latex: \\\\vspace")
+         ( "^[ ]*\\\\newpage" . "#+latex: \\\\newpage")
+         ( "^[ ]*\\\\columnbreak" . "#+latex: \\\\columnbreak")
+         ))
+    (setq this (car kp))
+    (setq that (cdr kp))
+    (my/replace-in-buffer this that)
    )
 )
   #+END_SRC
@@ -155,7 +156,7 @@ generated code visualization through C-c C-v v is super cool.
   + All C programs consist of a series of /functions/, which have return values!
 
   + E.g., Assignment ~x = v~ is the function that updates the value of name ~x~
-	with the value of ~v~ then terminates yielding ~v~ as a return value.
+    with the value of ~v~ then terminates yielding ~v~ as a return value.
 
   + Semicolons act as statement /terminators/ ---in contrast to English,
     wherein they are /separators/.
@@ -176,10 +177,12 @@ generated code visualization through C-c C-v v is super cool.
   + Characters are in-fact aliases for ASCII numerals.
     #+BEGIN_SRC C :exports results
     printf("'A' ≈ %d  ≡  %s", 'A', 'A' == 65? "true" : "false");
+    printf("\n'Z' ­ 23  ≈  %c  ≡  %d", 'Z' - 23, 'Z' - 23);
     #+END_SRC
 
     #+RESULTS:
-    : 'A' ≈ 65  ≡  true
+    | 'A' | ≈ | 65 | ≡ | true |   |    |
+    | 'Z' | ­ | 23 | ≈ | C    | ≡ | 67 |
 
   + C functions don't have to return anything if it's not appropriate.
     - E.g., ~exit(n)~ is the function that returns control to the operating system;
@@ -473,7 +476,7 @@ printf("\n 10·%d ⇒ %d", x, times10(x));
 
 How did we know is was 223?
 | 0. Ninth bit is on       | ~100000000~ | ~1 << 8~   |
-| 1. Negate it: Eight ones | ~11111111~  | ~(1 << 8)~ |
+| 1. Negate it: Eight ones | ~11111111~  | ~~(1 << 8)~ |
 | 2. Sixth bit is on       | ~100000~    | ~1 << 5~   |
 | 3. Xor them              | ~11011111~  | ~⋯ ^ ⋯~    |
 | 4. See it as a decimal   | ~223~       |          |
@@ -501,6 +504,9 @@ Ironically, C has no primitive binary printing utility.
     arrays of characters/: The name ~s~ refers to the /address of/ the first character, the ~'t'~,
     with the array being ~'t' → 'h' → 'i' → 's' → 𝟘~, where 𝟘 is /not/ ASCII zero
     ---whose value is 48--- but ASCII /null/ ---i.e., all bits set to 0.
+
+    - Note that null 𝟘 is denoted by ~'\0'~ and has /value/ 0, i.e., false, so
+      conditions of the form ~p != '\0'~ are the same as ~p~.
 
   + /An array name is a pointer to the beginning of the array./
     - Yet, an array name is a constant and you can't do arithmetic with it.
@@ -539,6 +545,221 @@ int length(char* c)
 
 assert(length("hello world") == 11);
 #+END_SRC
+
+* Floats & Other Types
+
+ + float: Representing huge numbers to tiny fractions.
+ + double: Like float, but greater precision.
+ + int: The integers; it has 2 /subtypes/; namely short, long, and unsigned.
+   - Short and long allocate less (half) or more (twice) memory, respectively.
+   - Unsigned means we omit negative numbers, and therefore have twice as many
+     non-negative numbers since the sign is no longer a necessary place-holder.
+     * Also useful when negative integers are unreasonable for the current task.
+
+Type aliases: ~typedef existingType newName;~
+#+BEGIN_SRC C
+// A named product: String × ℤ × ℝ   having names  name, age, height.
+struct entry
+{
+  char   name[30];
+  short  age;
+  float  height;
+}; // Note that this is a statement
+
+// Alias for readability.
+typedef   struct entry   Person;
+
+int main()
+{                                            // Exponent form for numbers.
+  struct entry qasim = {"qasim", 0, 613e-2}; // 613e-2 ⇒ 613 × 10⁻² ⇒ 6.13
+  Person q = qasim;
+  q.age = 23;
+
+  printf("Hello! My name is %s and I'm %d years old, being %f ft tall",
+     q.name, q.age, q.height);
+  return 0;
+}
+#+END_SRC
+
+#+RESULTS:
+| Hello! My name is qasim and I'm 23 years old | being 6.130000 ft tall |
+
+* Forming Numbers using Octal & Hexadecimal
+
+Numbers that begin with a 0 are interpreted as octal and those beginning with 0x or 0X
+are hexadecimal. These forms are obtained from binary by grouping using 3 bits
+and 4 bits, respectively. E.g., ~129 ≈ 0201 ≈ 0x81~ since:
+
++ 129 →⟨binary⟩ 10 000 001 →⟨octal⟩ 2 0 1
++ 129 →⟨binary⟩ 1000 0001  →⟨hexadecimal⟩ 8 1
+
+Indeed:
+#+BEGIN_SRC C :exports both
+int x = 129, y = 0201, z = 0x81, zz = 0X81, b = (x == y) && (x == zz);
+printf("%d ≈ %d ≈ %d; %d", x, y, z, b);
+#+END_SRC
+
+#+RESULTS:
+: 129 ≈ 129 ≈ 129; 1
+
+* The Preprocessor
+
+  The preprocessor performs alterations to a program /before/ it is compiled; e.g.,
+  the following ensures the replacement of every occurrence of ~this(⋯, ⋯)~ after it with
+  whatever ~that~ is.
+  #+BEGIN_SRC C
+#define this(arg1, arg2)  that
+#+End_SRC
+
+  + All preprocessor commands are preceded by the ~#~ symbol.
+
+  + One generally defines useful constants or abbreviations this way, and if they have
+    a collection of such parameters or utilities in some file, then they can
+    /copy-paste/ them into the current program file by using ~#include~ as mentioned
+     before.
+
+* Array initialisation
+
+#+BEGIN_SRC C :includes <assert.h>
+int nums[] = {12, 144, 1972};
+assert( nums[0] == 12 );
+#+END_SRC
+
+* Pointer initialisation
+
+#+BEGIN_SRC C :exports both
+int a[30], *p;
+
+// Make p point to the beginning of the array a, since a is itself a pointer to the
+// beginning of the array.
+p = a;
+
+// Determine the actual machine address of a variable by predicing it with &.
+int fred;
+p = &fred;
+
+// If we need to know exactly where in the machine C had decidede to allocate space
+// to fred, we need only to print out p; whence & is read “address of”.
+printf("%p", p);
+#+END_SRC
+
+#+RESULTS:
+: 0x7ffee36348ac
+
+
+Since the name of an array is itself a pointer to the beginning of an array, we have
+| arr ≈ &arr[0] |
+
+#+BEGIN_SRC C :includes <assert.h>
+// Find furthest points of ‘int a[N-1]’ that are identical.
+#define N 12
+int a[] = {9,8,1,2,3,4,4,3,2,1,7,6};
+
+int * p = a, *q = &a[N-1];
+while(*p != *q) p++, q--;
+
+assert(*p == a[2] && *q == a[9]);
+#+END_SRC
+
+
+Before C99, function return types could be omitted with the understanding that the
+default is ~int~. However, ~main~ still needs its return type. The following works with
+many warnings.
+#+BEGIN_SRC C :includes <assert.h> :exports both
+f() {return 9; }
+g() {return 'c'; } // Remember that chars are actually numbers.
+
+int main() { printf("%d", f() + g()); return 0; }
+#+END_SRC
+
+#+RESULTS:
+: 108
+
+* Input --getting things /into/ the machine
+
+  + ~getchar~ returns the next character input from the keyboard.
+
+#+BEGIN_SRC C :tangle (currently-working-with)
+#include <stdio.h>
+
+int main()
+{
+  printf("Please enter a character: ");
+  char c = getchar();
+  printf("You entered: %c", c);
+  printf("\nBye\n");
+
+  return 0;
+}
+#+END_SRC
+
+#+RESULTS:
+
+* Interpreter for C
+
+  *Adapted* to cater to interactive programs
+  from /An Interactive Way to C/ and my init's ~my/org-run-haskell~ which really
+  ought to be extracted into its own piece.
+
+#+BEGIN_SRC emacs-lisp :tangle InteractiveWayToC.el
+;; Every source block is in ‘focus’ when the variables ~NAME~ and ~NAMECode~ refer to it.
+
+(cl-defun currently-working-with (&optional (name (file-name-sans-extension (buffer-name))))
+  "Provide the name (without extension) of the source block's resulting file.
+   The name is then tied to the “NAMECode” global variable utilised
+   by the “show-code” method, <f7>, and the “interpret” command's global variable “NAME”.
+
+   If no argument is provided, we use “⟪BufferName⟫.c” as default file name.
+  "
+  (setq NAME name)
+  (setq NAMECode (concat name ".c"))
+)
+
+(defun not-currently-working-with (&optional name)
+  "When “:tangle fn” has “fn” being the empty string, the tangle does not transpire.
+   As such, it is as if we are not actually generating the source block.
+
+   This operation only returns the empty string and does not alter any existing state.
+   If we alter state, then earlier invocations to (currently-working-with) are rendered
+   useless!
+  "
+
+  ""   ;; Our return value.
+)
+
+(defun interpret () "Execute focused source blocks in a new buffer."
+  (interactive)
+  (save-buffer)
+  (org-babel-tangle)
+
+  (let ((buf (concat "*Interactive Way to C* " NAME))
+       (kill-buffer-query-functions nil))
+
+    (ignore-errors (kill-buffer buf))
+    (async-shell-command
+    (concat
+     "cd " default-directory "; NAME=" NAME " ; gcc $NAME.c -o $NAME.exe ; ./$NAME.exe")
+    buf)
+  )
+  ;; (insert-focused-name)
+  ;; Go back to the literate buffer.
+  (other-window 1))
+
+(local-set-key (kbd "<f6>") 'interpret)
+#+END_SRC
+
+#+RESULTS:
+: interpret
+
+  Example use; press ~f6~.
+  #+BEGIN_SRC C :tangle (not-currently-working-with)
+#include <stdio.h>
+
+int main() {printf("Hello"); return 0; }
+#+END_SRC
+
+*Remember*: All ~currently-working-with~ tagged blocks are interpreted; usually
+you want to turn some of these off via ~not-currently-working-with~.
 
 * spacing COMMENT vfill :ignore:
   \vfill
