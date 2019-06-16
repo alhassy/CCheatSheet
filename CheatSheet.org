@@ -92,6 +92,34 @@ generated code visualization through C-c C-v v is super cool.
 
 :End:
 
+* Arrays and Strings and Things
++ C arrays are homogeneous ---all elements are of the same type---
+  and their size is static ---one cannot readily change how many elements they contain.
++ ~T name[N]~ ⇒ Declares ~name~ to be an array of type ~T~ consisting of ~N~ elements.
+  - In an initialisation, ~N~ may be omitted and is then inferred.
+    * E.g., ~int a[] = {2, 4, 6};~
+    * E.g., ~T a[N] = {x0, ..., xM}~ for ~M < N~ initialises the first ~M~ elements and the
+      remaining ~N - M~ are uninitialised, and may consist of random junk.
+
+:Example:
+#+BEGIN_SRC C
+// int [] a  ⇒  crashes!
+
+int a [] = {9, 7, 3};
+int b[3] = {4, 2, 1};
+
+printf("%d", b[1]);
+
+int c[10] = {3, 22, 9};
+printf("\n %d and %d", c[1], c[7]);
+#+end_src
+
+#+RESULTS:
+|  2 |     |   |
+| 22 | and | 0 |
+
+:End:
+
 * LaTeX Extra, Local, Setup :ignore:
 
 # Can be obtained from: https://github.com/alhassy/MyUnicodeSymbols
@@ -679,7 +707,7 @@ int main() { printf("%d", f() + g()); return 0; }
 
   + ~getchar~ returns the next character input from the keyboard.
 
-#+BEGIN_SRC C :tangle (currently-working-with)
+#+BEGIN_SRC C :tangle (not-currently-working-with)
 #include <stdio.h>
 
 int main()
@@ -693,7 +721,30 @@ int main()
 }
 #+END_SRC
 
-#+RESULTS:
+Let's extend ~getchar~ to work on buffers of length, say, 20:
+#+BEGIN_SRC C :tangle (currently-working-with)
+#include <stdio.h>
+
+#define BUFFER_LENGTH 10
+
+int main()
+{
+  printf("Please enter a string, only first %d chars or newline will be read: \n\t\t",
+         BUFFER_LENGTH);
+  char cs[BUFFER_LENGTH];
+  int keep_reading = 1;
+  char * p = cs;
+  while(keep_reading && p < cs + BUFFER_LENGTH)
+    {*p = getchar(); if (*p == '\n') keep_reading = 0; else p++;}
+
+  ,*p = '\0'; // Strings are a null-terminated arrays of chars.
+
+  printf("\nYou entered: %s", cs);
+  printf("\nBye\n");
+
+  return 0;
+}
+#+END_SRC
 
 * Interpreter for C
 
