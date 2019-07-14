@@ -1,15 +1,19 @@
 # (org-latex-export-to-pdf)
+#
+# update CheatSheet repo
+# git submodule foreach git reset --hard; git submodule update --remote
 
 #+TITLE: C Language CheatSheet
-#+MACRO: URL https://github.com/alhassy/CCheatSheet
 #+MACRO: blurb Basics of the tremendously ubiquitous C language that permeates most of computing!
-#+MACRO: ShowURL @@latex:{\tiny\hspace{6em}\url{ {{{URL}}} } }@@
-#+AUTHOR: [[http://www.cas.mcmaster.ca/~alhassm/][Musa Al-hassy]] {{{ShowURL}}}
+#+AUTHOR: [[http://www.cas.mcmaster.ca/~alhassm/][Musa Al-hassy]]
 #+EMAIL: alhassy@gmail.com
-#+TODO: Todo | spacing begin end LaTeX
-#+OPTIONS: d:nil
+#+TODO: Todo | spacing LaTeX
+#+OPTIONS: t:nil d:nil
 #+INCLUDE: CheatSheet/CheatSheetSetup.org
-#+PROPERTY: header-args :results replace
+#+PROPERTY: header-args :exports none
+
++ C is a mid-level language that has the capability to examine memory and the variables
+  stored there.
 
 :Nope:
 #+BEGIN_SRC C
@@ -92,57 +96,23 @@ generated code visualization through C-c C-v v is super cool.
 
 :End:
 
-* Arrays and Strings and Things
-+ C arrays are homogeneous ---all elements are of the same type---
-  and their size is static ---one cannot readily change how many elements they contain.
-+ ~T name[N]~ ⇒ Declares ~name~ to be an array of type ~T~ consisting of ~N~ elements.
-  - In an initialisation, ~N~ may be omitted and is then inferred.
-    * E.g., ~int a[] = {2, 4, 6};~
-    * E.g., ~T a[N] = {x0, ..., xM}~ for ~M < N~ initialises the first ~M~ elements and the
-      remaining ~N - M~ are uninitialised, and may consist of random junk.
-
-:Example:
-#+BEGIN_SRC C
-// int [] a  ⇒  crashes!
-
-int a [] = {9, 7, 3};
-int b[3] = {4, 2, 1};
-
-printf("%d", b[1]);
-
-int c[10] = {3, 22, 9};
-printf("\n %d and %d", c[1], c[7]);
-#+end_src
-
-#+RESULTS:
-|  2 |     |   |
-| 22 | and | 0 |
-
-:End:
+# Since && is control flow, we may document tests as follows, or before the test if we like.
+# assert(condition && "documentation");
 
 * LaTeX Extra, Local, Setup :ignore:
 
-# Can be obtained from: https://github.com/alhassy/MyUnicodeSymbols
-#
-#+LATEX_HEADER: \usepackage{/Users/musa/MyUnicodeSymbols/MyUnicodeSymbols}
 
-# Removing the red box that appears in "minted" when using unicode.
-# Src: https://tex.stackexchange.com/questions/343494/minted-red-box-around-greek-characters
-#
-#+LATEX_HEADER: \makeatletter
-#+LATEX_HEADER: \AtBeginEnvironment{minted}{\dontdofcolorbox}
-#+LATEX_HEADER: \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
-#+LATEX_HEADER: \makeatother
+#+LATEX_HEADER: \def\cheatsheeturl{https://github.com/alhassy/CCheatSheet}
 
-#+LATEX_HEADER: \usepackage{newunicodechar}
-#+LATEX_HEADER: \newunicodechar{𝑻}{\ensuremath{T}}
-#+LATEX_HEADER: \newunicodechar{⊕}{\ensuremath{\oplus}}
-#+LATEX_HEADER: \newunicodechar{≈}{\ensuremath{\approx}}
-
+#+LATEX_HEADER: \newunicodechar{ⁿ}{\ensuremath{^n}}
 #+LATEX_HEADER: \newunicodechar{⟪}{\ensuremath{\langle\!\langle}}
 #+LATEX_HEADER: \newunicodechar{⟫}{\ensuremath{\rangle\!\rangle}}
-
 #+LATEX_HEADER: \newunicodechar{𝟘}{\ensuremath{\mathbb{0}}}
+#+LATEX_HEADER: \newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+#+LATEX_HEADER: \newunicodechar{⁻}{\ensuremath{^-}}
+# superscript minus
+
+#+LATEX_HEADER: \newunicodechar{✓}{ \checkmark }
 
 * COMMENT ~\LaTeX~ commands ↦ ~#+latex: \LaTeX~
 
@@ -177,7 +147,6 @@ printf("\n %d and %d", c[1], c[7]);
   #+END_SRC
 
   #+RESULTS:
-
 
 * Adminstriva
 
@@ -229,8 +198,6 @@ printf("\n %d and %d", c[1], c[7]);
     + The number of occurrences of ‘%’ in the string argument is the number of additional arguments
       the ~printf~ takes.
 
-* spacing newpage                                            :ignore:
-#+latex: \newpage
 * Conditionals & Assertion-Based Testing
 
   In C, /true ≈ non-zero/.
@@ -327,9 +294,6 @@ We see the results alongside writing a function, without having to form a ~main~
 just to check these tests.
 :End:
 
-* spacing newpage                                            :ignore:
-#+latex: \newpage
-
 * Assignments
 
 #+BEGIN_SRC C
@@ -372,19 +336,8 @@ int i = 0;
 do printf("%d \n", i++);
 while (i != 10); //Note the ending semicolon.
 #+END_SRC
-#+RESULTS:
-| 0 |
-| 1 |
-| 2 |
-| 3 |
-| 4 |
-| 5 |
-| 6 |
-| 7 |
-| 8 |
-| 9 |
 
-* spacing newpage                                            :ignore:
+* spacing COMMENT newpage                                            :ignore:
 #+latex: \newpage
 
 * Arithmetic and Logic
@@ -520,60 +473,8 @@ printf("\n " BinPat, ToBin(~(1 << 8)));
 
 Ironically, C has no primitive binary printing utility.
 
-* spacing newpage                                                    :ignore:
+* spacing COMMENT newpage                                                    :ignore:
 #+latex: \newpage
-* Strings, Arrays, and Pointers
-
-  + The idea of a pointer is central to the C programming philosophy.
-    - It is pointers to strings, rather than strings themselves, that're passed around
-      in a C program.
-
-  + C strings like ~s = "this"~ actually, under the hood, are /null-terminated
-    arrays of characters/: The name ~s~ refers to the /address of/ the first character, the ~'t'~,
-    with the array being ~'t' → 'h' → 'i' → 's' → 𝟘~, where 𝟘 is /not/ ASCII zero
-    ---whose value is 48--- but ASCII /null/ ---i.e., all bits set to 0.
-
-    - Note that null 𝟘 is denoted by ~'\0'~ and has /value/ 0, i.e., false, so
-      conditions of the form ~p != '\0'~ are the same as ~p~.
-
-  + /An array name is a pointer to the beginning of the array./
-    - Yet, an array name is a constant and you can't do arithmetic with it.
-
-#+BEGIN_SRC C :exports both
-int length(char c[]) // A string is a character array
-{
-  // While c[l] is not an ASCII null, keep counting until.
-  int l = 0;
-  while( c[l] ) l++;
-  return l;
-}
-
-int main()
-{
-  char str[] = "hello world 0123";
-  printf("length(“%s”) = %d", str, length(str));
-   return 0;
-}
-#+END_SRC
-
-#+RESULTS:
-: length(“hello world 0123”) = 16
-
-  + ~T *p;~ ⇒ declare ~p~ to be a pointer to elements of type ~T~.
-  + ~*p = v~ ⇒ “put the value of ~v~ in the location which ~p~ points to”
-
-We can now rewrite the length function with even less square brackets.
-#+BEGIN_SRC C  :main no :includes '(\"/Users/musa/CCheatSheet/myassert.h\")
-int length(char* c)
-{
-  char* start = c;
-  while( *c ) c++; // Local copy of c is affected.
-  return c - start;
-}
-
-assert(length("hello world") == 11);
-#+END_SRC
-
 * Floats & Other Types
 
  + float: Representing huge numbers to tiny fractions.
@@ -646,16 +547,154 @@ printf("%d ≈ %d ≈ %d; %d", x, y, z, b);
     /copy-paste/ them into the current program file by using ~#include~ as mentioned
      before.
 
-* Array initialisation
+* Pointers
 
+  + A fly is a bug that flies; so a /fly flies/.
+  + Likewise, a /pointer points/.
+
+Variables may be used without having values declared!
+This is akin to buying the land ---computer memory--- but not building the house
+---assigning a value--- thereby leaving us with a vacant lot that contains trees, garbage,
+and whatever was there before you get there ---as is the case in C.
+# C is our middle-man to the real-estate agent, the operating system.
 #+BEGIN_SRC C :includes <assert.h>
-int nums[] = {12, 144, 1972};
-assert( nums[0] == 12 );
+char c;
+int i;
+long x;
+float f;
+double d;
+
+// Uninitalised ⇒ have random values.
+
+printf("char   %c\n",c);
+printf("int    %i\n",i);
+printf("long   %l\n",x);
+printf("float  %f\n",f);
+printf("double %d\n",d);
 #+END_SRC
 
-* Pointer initialisation
+#RESULTS:
+| char   |      |
+| int    | 32766 |
+| long   |       |
+| float  |   0.0 |
+| double | 73896 |
 
-#+BEGIN_SRC C :exports both
+Rather than being set to 0, variables automatically obtain the random values in memory and
+one should always initialise variables upon declaration.
+
++ The amount of space a variable needs is its /size/ in memory.
++ The actual location of the variable in memory is called its /address/ ---just like the
+  address on your house or on an ugly vacant lot.
+
+0. In your computer, memory space is measured in bytes.
+   - Not every computer uses the same storage space for its variables.
+   - The ~sizeof~ keyword tells us how many bytes a variable, or structure, uses up.
+     + Both sizeof(x) and sizeof(int) are valid calls.
+   - This keyword is used primarily for manual allocation of memory for new variables
+     we create.
+
+     #+BEGIN_SRC C :includes <assert.h>
+char c;
+int i;
+long x;
+float f;
+double d;
+
+// Uninitalised ⇒ have random values.
+
+printf("char   %i\n",sizeof(c));
+printf("int    %i\n",sizeof(i));
+printf("ℤ      %i\n",sizeof(int));
+printf("long   %i\n",sizeof(x));
+printf("float  %i\n",sizeof(f));
+printf("double %i\n",sizeof(d));
+
+#define Length 123
+#define Type   char
+Type arr[Length];
+
+assert( sizeof(arr) == sizeof(Type) * Length );
+#+END_SRC
+
+1. Memory is set aside for variables, even if they're not used.
+   - To avoid hogging up excess memory, programs that need a lot of memory usually
+     request it a little at a time using ~malloc~ ---‘m’emory ‘alloc’ation.
+
+2. C is a mid-level language that has the capability to examine memory and the variables
+  stored there.
+
+3. Why care about /where/ variables are located in memory?
+
+   Consider sorting an array of complex data, rather than moving the data itself
+   around, it is much cheaper to simply sort an array corresponding to their numeric
+   locations in memory.
+
+   - The variables that hold addresses are called /pointers/.
+
+4. A variable consists of 4 pieces: Name, type, size, and location in memory.
+   - The first two we know, since we write them down.
+   - The third is obtained via the ~sizeof~ operator.
+   - The fourth is obtained by using the “address of” operator ~&~, resulting
+     in a pointer. ( One may think of ‘&’ as simply projecting the fourth component
+     from a variable structure. )
+
+   /A pointer is a variable that holds a memory address./
+
+   - Pointers are represented as numeric locations, but they are not number values.
+
+6. ~T*~ is denotes pointers of type ~T~.
+
+   - Pointers are declared like any other variable.
+   - Conventionally a declaration looks like ~T *t;~ ---the whitespace around the ‘*’ is
+     completely irrelevant--- as a reminder that the expression ~*t~ denotes a value of
+     type ~T~. Huh?
+     + Without ‘*’, pointers consume and represent memory locations.
+     + With ‘*’, they denote a value of type ~T~.
+
+     Unless you're working with pointers to pointers, you do not want
+     to write down ~*p = &x~, which sets the /value/ at the location of ~p~ to refer to an /address/.
+#+BEGIN_SRC C :includes <assert.h>
+// Valid declarations
+int*p;
+int* q;
+int *r;
+int * s;
+
+printf("p is location %u \n", p);
+
+char arr[] = "hello";
+p = &arr; p = &arr[0]; p = arr;
+printf("p is location %u \n", p);
+
+// For arrays, the array name and the address of the array both refer to the address
+// of the zeroth element.
+assert( &arr    == arr );
+assert( &arr[0] == arr );
+#+END_SRC
+
+1. Here's some useful conversion laws
+   - *&-inverses ::  ~p = &x  ≡  *p = x~
+     + The lhs lives in the land of addresses and locations,
+       whereas the rhs lives in the land of values.
+
+   - []&-array ::  ~arr + i = &arr[i]~
+
+   From these we obtain:
+   - []*-array :: ~*(arr + i) = arr[i]~  ---immediate from the above two laws.
+   - *-array :: ~*arr = arr[0]~  ---immediate from the above two laws.
+   - ***-array :: ~**arr = arr[0][0]~ ---the previous law iterated twice.
+
+Tips:
+| ✓ | Pointers must be declared with the asterisk                                      |
+| ✓ | When a pointer is used without its asterisk, it refers to a memory location      |
+| ✓ | When a pointer is used with its asterisk, it indirectly refers to a value        |
+| ✓ | To assign a pointer a memory location, prefix the other variable with &          |
+| ✓ | Pointers are memory addresses and can be displayed as unsigned integers using ~%u~ |
+
+** Pointer initialisation
+
+ #+BEGIN_SRC C :exports both
 int a[30], *p;
 
 // Make p point to the beginning of the array a, since a is itself a pointer to the
@@ -669,16 +708,16 @@ p = &fred;
 // If we need to know exactly where in the machine C had decidede to allocate space
 // to fred, we need only to print out p; whence & is read “address of”.
 printf("%p", p);
-#+END_SRC
+ #+END_SRC
 
-#+RESULTS:
-: 0x7ffee36348ac
+ #+RESULTS:
+ : 0x7ffee36348ac
 
 
-Since the name of an array is itself a pointer to the beginning of an array, we have
-| arr ≈ &arr[0] |
+ Since the name of an array is itself a pointer to the beginning of an array, we have
+ | arr ≈ &arr[0] |
 
-#+BEGIN_SRC C :includes <assert.h>
+ #+BEGIN_SRC C :includes <assert.h>
 // Find furthest points of ‘int a[N-1]’ that are identical.
 #define N 12
 int a[] = {9,8,1,2,3,4,4,3,2,1,7,6};
@@ -687,21 +726,205 @@ int * p = a, *q = &a[N-1];
 while(*p != *q) p++, q--;
 
 assert(*p == a[2] && *q == a[9]);
-#+END_SRC
+ #+END_SRC
 
 
-Before C99, function return types could be omitted with the understanding that the
-default is ~int~. However, ~main~ still needs its return type. The following works with
-many warnings.
-#+BEGIN_SRC C :includes <assert.h> :exports both
+ Before C99, function return types could be omitted with the understanding that the
+ default is ~int~. However, ~main~ still needs its return type. The following works with
+ many warnings.
+ #+BEGIN_SRC C :includes <assert.h> :exports both
 f() {return 9; }
 g() {return 'c'; } // Remember that chars are actually numbers.
 
 int main() { printf("%d", f() + g()); return 0; }
-#+END_SRC
+ #+END_SRC
+
+ #+RESULTS:
+ : 108
+
+* Arrays and Strings and Things
++ C arrays are homogeneous ---all elements are of the same type---
+  and their size is static ---one cannot readily change how many elements they contain.
++ ~T name[N]~ ⇒ Declares ~name~ to be an array of type ~T~ consisting of ~N~ elements.
+  - In an initialisation, ~N~ may be omitted and is then inferred.
+    * E.g., ~int a[] = {2, 4, 6};~
+    * E.g., ~T a[N] = {x0, ..., xM}~ for ~M < N~ initialises the first ~M~ elements and the
+      remaining ~N - M~ are uninitialised, and may consist of random junk.
+
++ Array access and modification is done with square brackets: ~arr[int_expression]~
+  may be treated as a normal variable wherever it occurs.
+
+:Example:
+#+BEGIN_SRC C
+// int [] a  ⇒  crashes!
+
+int a [] = {9, 7, 3};
+int b[3] = {4, 2, 1};
+
+printf("%d", b[1]);
+
+int c[10] = {3, 22, 9};
+printf("\n %d and %d", c[1], c[7]);
+#+end_src
 
 #+RESULTS:
-: 108
+|  2 |     |   |
+| 22 | and | 0 |
+
+:End:
+
++ Strings are just single-character arrays.
+
+#+BEGIN_SRC C :includes <assert.h>
+char hello  [] = "hello";
+char hello1 [] = {'h', 'e', 'l', 'l', 'o', '\0'};
+char hello2 [6] = {'h', 'e', 'l', 'l', 'o'}; // Null byte included automatically.
+
+// The null byte is not considered part of the string,
+// since it's only a terminating marker.
+// As such, it's not counted in the length of the string.
+
+// Strings end in the null byte, 0x00 aka \0;
+// that's how C knows where the end of a string is;
+// otherwise it'd keep looking for the null byte,
+// scanning memory then crashing.
+
+char nope [] = {'h', 'e', 'l', 'l', 'o'}; // Just an array of chars, neither size nor \0 at the end to indicate that this is a string.
+
+// The array name suffices to refer to the whole string,
+// no need to mention the brackets.
+
+// Strcmp succeeds when its arguments are different;
+// and fails (returning 0) if they're the same.
+#define Equal(s,t) assert(strcmp(s, t) == 0);
+
+Equal(hello, "hello")
+Equal(hello1, "hello")
+Equal(hello2, "hello")
+
+assert(strcmp(nope, "hello")); // different args.
+
+// C stops looking when the null byte is found!
+
+char surprise [] = "surprise! No more, my friend";
+assert(strlen(surprise) == 28);
+
+surprise[8] = '\0';
+Equal(surprise, "surprise")
+#+END_SRC
+
++ string.h contains the strX functions.
+
+#
+
++ Multi-dimensional arrays: ~T arr[d1][d2]...[dN]~.
+
+  - Just as chars are numbers, multi-dimensional arrays are plain one-dimensional arrays:
+    The multiple-dimension declaration syntax simply tells the compiler how to organise
+    the array into (nested) groups and the indexing tells it which (nested) group
+    we're interested in working with.
+
+#+BEGIN_SRC C :includes <assert.h>
+#define D0 4
+#define D1 3
+#define D2 2
+
+int arr [D0][D1][D2] = // 4 groups consisting of 3 rows with 2 items in each row
+  {
+    0, 1, // Items of arr[0][0][]
+    2, 3, // Items of arr[0][1][]
+    4, 5, // Items of arr[0][2][]
+
+    // Items of arr[1][][]
+    6, 7,
+    8, 9,
+    10, 11,
+
+    // Items of arr[2][][]
+    12, 13,
+    14, 15,
+    16, 17,
+
+    // Items of arr[3][][]
+    18, 19,
+    20, 21,
+    22, 23
+  };
+
+// Third group's second row, second item is 15.
+assert(arr[2][1][1] == 15); // Note: 2*D0 + 1*D1 + 1*D2 ≈ (+ 8 3 2)
+
+assert(arr[0][1][0] == 2);
+
+int nope[2][1] = {2, 4};
+assert( *(nope + 0) == 2);
+// assert( *(arr + (3*D0 + 2*D1 + 2*D2)) == 15);
+
+// Anomaly:
+// char words [a][b][c]
+// ⇒ has a lines, consisting of b words, where each consists of c many characters.
+
+#+END_SRC
+
+
+#+RESULTS:
+
+#
+
++ The uppercase letters start at ASCII code 65 and lowercase start at code 97.
++ The compiler sees all characters as numbers.
+
+** Strings, Arrays, and Pointers
+
+   + The idea of a pointer is central to the C programming philosophy.
+     - It is pointers to strings, rather than strings themselves, that're passed around
+       in a C program.
+
+   + C strings like ~s = "this"~ actually, under the hood, are /null-terminated
+     arrays of characters/: The name ~s~ refers to the /address of/ the first character, the ~'t'~,
+     with the array being ~'t' → 'h' → 'i' → 's' → 𝟘~, where 𝟘 is /not/ ASCII zero
+     ---whose value is 48--- but ASCII /null/ ---i.e., all bits set to 0.
+
+     - Note that null 𝟘 is denoted by ~'\0'~ and has /value/ 0, i.e., false, so
+       conditions of the form ~p != '\0'~ are the same as ~p~.
+
+   + /An array name is a pointer to the beginning of the array./
+     - Yet, an array name is a constant and you can't do arithmetic with it.
+
+ #+BEGIN_SRC C :exports both
+int length(char c[]) // A string is a character array
+{
+  // While c[l] is not an ASCII null, keep counting until.
+  int l = 0;
+  while( c[l] ) l++;
+  return l;
+}
+
+int main()
+{
+  char str[] = "hello world 0123";
+  printf("length(“%s”) = %d", str, length(str));
+   return 0;
+}
+ #+END_SRC
+
+ #+RESULTS:
+ : length(“hello world 0123”) = 16
+
+   + ~T *p;~ ⇒ declare ~p~ to be a pointer to elements of type ~T~.
+   + ~*p = v~ ⇒ “put the value of ~v~ in the location which ~p~ points to”
+
+ We can now rewrite the length function with even less square brackets.
+ #+BEGIN_SRC C  :main no :includes '(\"/Users/musa/CCheatSheet/myassert.h\")
+int length(char* c)
+{
+  char* start = c;
+  while( *c ) c++; // Local copy of c is affected.
+  return c - start;
+}
+
+assert(length("hello world") == 11);
+ #+END_SRC
 
 * Input --getting things /into/ the machine
 
@@ -746,7 +969,7 @@ int main()
 }
 #+END_SRC
 
-* Interpreter for C
+* COMMENT Interpreter for C :tool:
 
   *Adapted* to cater to interactive programs
   from /An Interactive Way to C/ and my init's ~my/org-run-haskell~ which really
@@ -812,10 +1035,6 @@ int main() {printf("Hello"); return 0; }
 *Remember*: All ~currently-working-with~ tagged blocks are interpreted; usually
 you want to turn some of these off via ~not-currently-working-with~.
 
-* spacing COMMENT vfill :ignore:
-  \vfill
-* spacing COMMENT newpage                                                    :ignore:
-#+latex: \newpage
 * COMMENT Example code
 
   #+begin_src C++ :includes <stdio.h>
@@ -859,7 +1078,7 @@ C-c C-c: Evaluate src block.
      {{{blurb}}}
 
     ,*The listing sheet, as PDF, can be found
-     [here]({{{URL}}}/blob/master/CheatSheet.pdf)*,
+     [here](CheatSheet.pdf)*,
      while below is an unruly html rendition.
 
      This reference sheet is built around the system
@@ -883,7 +1102,6 @@ C-c C-c: Evaluate src block.
 
 #+RESULTS:
 : README.md
-
 
 * COMMENT footer
 
